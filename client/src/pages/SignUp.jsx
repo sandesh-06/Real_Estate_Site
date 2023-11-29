@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 export default function SignUp() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
+
   //on change event
   const handleChange = (e) => {
     e.preventDefault();
@@ -39,7 +41,7 @@ export default function SignUp() {
       setLoading(false); //if no error, set loading as false
       setError(null) //set error to null, if everything works fine (works for after encountering an error)
       navigate('/sign-in') //if user created successfully navigate to sign in page
-      console.log(data);
+      // console.log(data);
     } catch (error) {
       // console.log(error);
       setError(error.message);
