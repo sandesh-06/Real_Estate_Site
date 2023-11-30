@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { signInStart, signInSuccess, signInFailure } from "../redux/user/userSlice";
+
 export default function SignUp() {
   const [formData, setFormData] = useState({});
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
-
+  // const [error, setError] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  
+  const {loading, error} = useSelector((state) => state.user)
   const navigate = useNavigate();
-
+  const dispatch = useDispatch();
   //on change event
   const handleChange = (e) => {
     e.preventDefault();
@@ -22,7 +26,9 @@ export default function SignUp() {
     e.preventDefault();
     //instead of mentioning 'http://localhost....' in every fetch, add a proxy in vite.config.js file.
     try {
-      setLoading(true); //set loading true before execution of request
+      //old: setLoading(true); //set loading true before execution of request
+      //updated:
+      dispatch(signInStart());
       const res = await fetch("/api/auth/signin", {
         method: "POST",
         headers: {
@@ -33,19 +39,30 @@ export default function SignUp() {
       const data = await res.json();
       if (data.success === false) {
         //if the data has an error then execute this
-        // console.log(data);
-        setError(data.message);
-        setLoading(false);
+        //updated:
+        dispatch(signInFailure(data.message))
         return;
+        // console.log(data);
+        //old:
+        // setError(data.message);
+        // setLoading(false);
+        
       }
-      setLoading(false); //if no error, set loading as false
-      setError(null) //set error to null, if everything works fine (works for after encountering an error)
+      //old:
+      // setLoading(false); //if no error, set loading as false
+      // setError(null) //set error to null, if everything works fine (works for after encountering an error)
+      //updated: 
+      dispatch(signInSuccess(data))
       navigate('/') //if user created successfully navigate to sign in page
       // console.log(data);
     } catch (error) {
       // console.log(error);
-      setError(error.message);
-      setLoading(false);
+      //updated:
+      dispatch(signInFailure(error.message))
+
+      //old:
+      // setError(error.message);
+      // setLoading(false);
     }
   };
   return (
