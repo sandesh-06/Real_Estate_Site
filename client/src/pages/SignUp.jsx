@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import GoogleOAuth from "../components/GoogleOAuth";
 export default function SignUp() {
   const [formData, setFormData] = useState({});
   const [error, setError] = useState(null);
@@ -79,6 +80,9 @@ export default function SignUp() {
          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80 cursor-pointer">
           Sign up
         </button>
+
+        <GoogleOAuth/>
+        
       </form>
 
     {/* Sign in redirect */}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { signInStart, signInSuccess, signInFailure } from "../redux/user/userSlice";
+import GoogleOAuth from "../components/GoogleOAuth";
 
 export default function SignUp() {
   const [formData, setFormData] = useState({});
@@ -89,6 +90,9 @@ export default function SignUp() {
          className="bg-slate-700 text-white p-3 rounded-lg uppercase hover:opacity-95 disabled:opacity-80 cursor-pointer">
           Login
         </button>
+
+        <GoogleOAuth/>
+        
       </form>
 
     {/* Sign in redirect */}
