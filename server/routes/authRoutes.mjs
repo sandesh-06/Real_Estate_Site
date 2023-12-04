@@ -1,6 +1,5 @@
 //PACKAGES
 import express from "express";
-import { body, validationResult } from "express-validator";
 
 //CONTROLLERS
 import { signup, signin, google } from "../controllers/authController.mjs";
