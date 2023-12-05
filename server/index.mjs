@@ -3,11 +3,14 @@ import mongoose from 'mongoose';
 import dotenv from "dotenv"; //to access env variables
 import userRouter from './routes/userRoute.mjs'
 import authRouter from './routes/authRoutes.mjs'
+import cookieParser from 'cookie-parser';
 //CONFIGURATIONS
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT 
 app.use(express.json()); //without this we cannot send or receive json using api calls
+
+app.use(cookieParser()); //to verify the auth token inside the cookie, while performing user updation or deletion.
 
 //ROUTES
 app.use("/api/auth", authRouter);
