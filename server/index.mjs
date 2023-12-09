@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from "dotenv"; //to access env variables
 import userRouter from './routes/userRoute.mjs'
 import authRouter from './routes/authRoutes.mjs'
+import listingRouter from './routes/listingRoutes.mjs'
 import cookieParser from 'cookie-parser';
 //CONFIGURATIONS
 dotenv.config();
@@ -15,6 +16,7 @@ app.use(cookieParser()); //to verify the auth token inside the cookie, while per
 //ROUTES
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/listing", listingRouter);
 
 //A COMMON MIDDLEWARE TO HANDLE ERROR
 app.use((err, req, res, next)=>{

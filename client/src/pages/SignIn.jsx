@@ -105,6 +105,8 @@ export default function SignUp() {
 
       {/* print the error message if there is an error */}
       {error && <p className="text-rose-500 font-semibold mt-5">{error}</p>}
+     
+    
     </div>
   );
 }

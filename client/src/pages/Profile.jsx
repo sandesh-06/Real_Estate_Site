@@ -1,5 +1,6 @@
-import React, { useRef, useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useRef, useState, useEffect  } from "react";
+import {Link} from 'react-router-dom'
+import { useSelector, useDispatch,  } from "react-redux";
 import {
   getDownloadURL,
   getStorage,
@@ -7,7 +8,17 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 import { firebase_app } from "../firebase.js";
-import { updateUserFailure, updateUserStart, updateUserSuccess } from "../redux/user/userSlice.js";
+import {
+  updateUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  signOutStart,
+  signOutFailure,
+  signOutSuccess,
+} from "../redux/user/userSlice.js";
 
 export default function Profile() {
   /* FIREBASE STORAGE RULES:
@@ -23,6 +34,7 @@ export default function Profile() {
 }
   */
   const dispatch = useDispatch();
+  
   const fileRef = useRef(null);
   const { currentUser } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
@@ -33,7 +45,7 @@ export default function Profile() {
   // console.log(fileUploadError);
   // console.log(formData);
   // console.log(formData);
-  
+
   useEffect(() => {
     if (file) {
       // console.log(file.name);
@@ -41,13 +53,14 @@ export default function Profile() {
     }
   }, [file]); //if there is file then call this function
 
+  //1. FUNCTION TO HANDLE PROFILE UPLOAD
   const handleFileUpload = (file) => {
     const storage = getStorage(firebase_app); //get the storage using your api key
     const fileName = new Date().getTime() + file.name; //because when i try to upload the same pic twice, we get an error. So if you add the current time to the file name, everytime you get a unique file name.
     const storageRef = ref(storage, fileName); //store this file name, in the storage
     const uploadTask = uploadBytesResumable(storageRef, file);
 
-    // traking the changes using uploadTask
+    // tracking the changes using uploadTask
     uploadTask.on(
       "state_changed",
       (snapshot) => {
@@ -69,36 +82,74 @@ export default function Profile() {
     );
   };
 
-  //TO HANDLE THE CHANGES IN THE FORM
-  const handleChange = (e) =>{
-    setFormData({...formData, [e.target.id]: e.target.value});
-  }
+  //2. TO HANDLE THE CHANGES IN THE FORM
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
 
-  const handleSubmit = async(e) =>{
+  //3. TO SUBMIT THE REPONSE TO THE BACKEND
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    try{
+    try {
       dispatch(updateUserStart());
-      
+
       const res = await fetch(`/api/user/update/${currentUser._id}`, {
         method: "POST",
-        headers:{
-          'Content-Type': 'application/json',
+        headers: {
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
       const data = await res.json();
-      if(data.success === false){
+      if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
       }
 
       dispatch(updateUserSuccess(data));
-    }
-    catch(err){
+    } catch (err) {
       dispatch(updateUserFailure(err.message));
     }
+  };
+
+  //4. TO HANDLE DELETE USER API
+  const handleDeleteUser = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+
+      dispatch(deleteUserSuccess(data));
+    } catch (err) {
+      dispatch(deleteUserFailure(err.message));
+    }
+  };
+
+  //5. TO HANDLE THE SIGN OUT FUNCTION
+  const handleSignOut = async()=>{
+    try{
+      // dispatch(signOutStart())
+      const res = await fetch('/api/auth/signout');
+      const data = await res.json();
+      
+      if(data.success === false){
+        dispatch(signOutFailure(data.message));
+        return;
+      }
+      dispatch(signOutSuccess(data));
+    }
+    catch(err){
+      dispatch(signOutFailure(err.message))
+    }
   }
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h3 className="text-center font-bold text-3xl my-7">PROFILE</h3>
@@ -118,12 +169,16 @@ export default function Profile() {
         <img
           onClick={() => fileRef.current.click()}
           className="h-32 w-32 rounded-full self-center object-cover cursor-pointer"
-          src={ formData.avatar || currentUser.avatar} //if the avatar exists in form data show that or yk..
+          src={formData.avatar || currentUser.avatar} //if the avatar exists in form data show that or yk..
           alt="profile_img"
         />
-       <p className="self-center">   {/*if error ? display error or if percentage ? display percentage or per=100 ? display imgage success or empty strng*/}
+        <p className="self-center">
+          {" "}
+          {/*if error ? display error or if percentage ? display percentage or per=100 ? display imgage success or empty strng*/}
           {fileUploadError ? (
-            <span className="text-red-700">Error uploading image! (must be less that 2MB)</span>
+            <span className="text-red-700">
+              Error uploading image! (must be less that 2MB)
+            </span>
           ) : filePercentage > 0 && filePercentage < 100 ? (
             <span className="text-slate-700">
               {`Uploading ${filePercentage}%`}
@@ -161,11 +216,21 @@ export default function Profile() {
         <button className="bg-slate-700 text-white rounded-lg p-3 uppercase hover:opacity-95 ">
           update
         </button>
+
+        {/* CREATE LISTING BUTTON */}
+        <Link className="bg-green-700 text-white p-3 uppercase text-center hover:opacity-95 rounded-lg" to={"/create-listing"}>
+          Create Listing
+        </Link>
       </form>
 
       <div className="flex justify-between mt-5">
-        <span className="text-red-700 cursor-pointer">Delete Account</span>
-        <span className="text-red-700 cursor-pointer">Sign out</span>
+        <span
+          onClick={handleDeleteUser}
+          className="text-red-700 cursor-pointer"
+        >
+          Delete Account
+        </span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign out</span>
       </div>
     </div>
   );

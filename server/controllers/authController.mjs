@@ -105,3 +105,14 @@ export const google = async (req, res, next) => {
     }
   } catch (err) {}
 };
+
+//4. SIGN OUT USER FUNCTION
+export const signout = (req, res, next)=>{
+  try{
+    res.clearCookie('access_token');
+    res.status(200).json({message: "signed out successfully"})
+  }
+  catch(err){
+    next(err);
+  }
+}
