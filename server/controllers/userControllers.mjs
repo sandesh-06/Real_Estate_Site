@@ -1,5 +1,6 @@
-
 import User from "../models/User.mjs";
+import Listing from "../models/Listing.mjs";
+
 import { errorHandler } from "../utils/error.mjs";
 import bcryptjs from "bcryptjs";
 
@@ -38,15 +39,30 @@ export const updateUser = async (req, res, next) => {
 };
 
 //TO DELETE USER ACCOUNT
-export const deleteUser = async(req, res, next)=>{
-  if(req.user.id !== req.params.id) return(next(errorHandler(401, 'You can only delete your account')));
-  try{
+export const deleteUser = async (req, res, next) => {
+  if (req.user.id !== req.params.id)
+    return next(errorHandler(401, "You can only delete your account"));
+  try {
     await User.findByIdAndDelete(req.params.id);
     // res.status(200).json(deletedUser);
-    res.clearCookie('access_token') //delete the cookie
-    res.status(200).json("Deleted Successfully")
-  }
-  catch(err){
+    res.clearCookie("access_token"); //delete the cookie
+    res.status(200).json("Deleted Successfully");
+  } catch (err) {
     next(err);
   }
-}
+};
+
+//TO DISPLAY THE LISTINGS OF THE USER
+export const getUserListing = async (req, res) => {
+  if (req.user.id === req.params.id) {
+    try {
+      const listings = await Listing.find({ userRef: req.params.id });
+
+      res.status(200).json(listings)
+    } catch (err) {
+      next(err);
+    }
+  } else {
+    return next(errorHandler(401, "You can only view your own listings!"));
+  }
+};

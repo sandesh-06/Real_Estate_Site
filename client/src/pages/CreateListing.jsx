@@ -155,6 +155,7 @@ export default function CreateListing() {
       if(data.success === false){
         setError(data.message);
       }
+      //once the listing is successfully created, navigate the user to display the created listing
       navigate(`/listing/${data._id}`)
     }catch(err){
       setError(err.message);

@@ -1,6 +1,6 @@
-import React, { useRef, useState, useEffect  } from "react";
-import {Link} from 'react-router-dom'
-import { useSelector, useDispatch,  } from "react-redux";
+import React, { useRef, useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
 import {
   getDownloadURL,
   getStorage,
@@ -34,7 +34,7 @@ export default function Profile() {
 }
   */
   const dispatch = useDispatch();
-  
+
   const fileRef = useRef(null);
   const { currentUser } = useSelector((state) => state.user);
   const [file, setFile] = useState(undefined);
@@ -45,6 +45,10 @@ export default function Profile() {
   // console.log(fileUploadError);
   // console.log(formData);
   // console.log(formData);
+
+  const [userListings, setUserListings] = useState([]);
+
+  const [showListingError, setShowListingError] = useState(false);
 
   useEffect(() => {
     if (file) {
@@ -133,23 +137,38 @@ export default function Profile() {
   };
 
   //5. TO HANDLE THE SIGN OUT FUNCTION
-  const handleSignOut = async()=>{
-    try{
+  const handleSignOut = async () => {
+    try {
       // dispatch(signOutStart())
-      const res = await fetch('/api/auth/signout');
+      const res = await fetch("/api/auth/signout");
       const data = await res.json();
-      
-      if(data.success === false){
+
+      if (data.success === false) {
         dispatch(signOutFailure(data.message));
         return;
       }
       dispatch(signOutSuccess(data));
+    } catch (err) {
+      dispatch(signOutFailure(err.message));
     }
-    catch(err){
-      dispatch(signOutFailure(err.message))
-    }
-  }
+  };
 
+  //6. TO HANDLE THE SHOW LISTING API
+  const handleShowListings = async () => {
+    try {
+      setShowListingError(false);
+      const res = await fetch(`/api/user/listings/${currentUser._id}`);
+
+      const data = await res.json();
+      if (data.success === false) {
+        setShowListingError(true);
+        return;
+      }
+      setUserListings(data);
+    } catch (err) {
+      setShowListingError(true);
+    }
+  };
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h3 className="text-center font-bold text-3xl my-7">PROFILE</h3>
@@ -218,7 +237,10 @@ export default function Profile() {
         </button>
 
         {/* CREATE LISTING BUTTON */}
-        <Link className="bg-green-700 text-white p-3 uppercase text-center hover:opacity-95 rounded-lg" to={"/create-listing"}>
+        <Link
+          className="bg-green-700 text-white p-3 uppercase text-center hover:opacity-95 rounded-lg"
+          to={"/create-listing"}
+        >
           Create Listing
         </Link>
       </form>
@@ -230,8 +252,53 @@ export default function Profile() {
         >
           Delete Account
         </span>
-        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">Sign out</span>
+        <span onClick={handleSignOut} className="text-red-700 cursor-pointer">
+          Sign out
+        </span>
       </div>
+
+      {/* TO SHOW THE LISTINGS */}
+      <button
+        onClick={handleShowListings}
+        className="text-green-700 w-full my-5"
+      >
+        Show my listings
+      </button>
+      <p className="text-red-500">
+        {showListingError ? "Error showing listings" : ""}
+      </p>
+
+
+      {userListings &&
+        userListings.length > 0 &&
+        <div className="">
+          <h1 className="text-2xl font-bold text-center underline">YOUR LISTINGS</h1>
+        {userListings.map((listings) => (
+          <div
+            key={listings._id}
+            className="flex border border-black rounded-lg p-3 justify-between items-center mt-3"
+          >
+            <Link to={`/listing/${listings._id}`}>
+              <img
+                src={listings.imageUrls[0]}
+                alt=""
+                className="h-16 w-16 object-contain"
+              />
+            </Link>
+            <Link
+              to={`/listing/${listings._id}`}
+              className="text-slate-700 font-semibold hover:underline truncate"
+            >
+              <p>{listings.name}</p>
+            </Link>
+
+            <div className="flex flex-col gap-3">
+              <button className="text-red-700">DELETE</button>
+              <button className="text-green-700">EDIT</button>
+            </div>
+          </div>
+        ))}
+        </div>}
     </div>
   );
 }
