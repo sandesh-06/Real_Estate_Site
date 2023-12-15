@@ -169,6 +169,27 @@ export default function Profile() {
       setShowListingError(true);
     }
   };
+
+  //7. TO HANDLE DELETE LISTING FUNCTIONALITY
+  const handleDeleteListing = async(listingId)=>{
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`,{
+        method: "DELETE",
+      })
+      const data = res.json();
+      if(data.success === false){
+        console.log(data.message);
+        return;
+      }
+
+      //once deleted update the userlisting
+      setUserListings((prev) => prev.filter((listing)=>listing._id !== listingId))
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   return (
     <div className="p-3 max-w-lg mx-auto">
       <h3 className="text-center font-bold text-3xl my-7">PROFILE</h3>
@@ -293,7 +314,7 @@ export default function Profile() {
             </Link>
 
             <div className="flex flex-col gap-3">
-              <button className="text-red-700">DELETE</button>
+              <button onClick={()=>handleDeleteListing(listings._id)} className="text-red-700">DELETE</button>
               <button className="text-green-700">EDIT</button>
             </div>
           </div>
